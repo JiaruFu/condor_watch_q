@@ -260,11 +260,13 @@ def watch_q(
                     file=sys.stderr,
                 )
 
-            msg = table_by(tracker.clusters, groupby, abbreviate_path_components=abbreviate_path_components)
+            summary, msg = table_by(tracker.clusters, groupby, abbreviate_path_components=abbreviate_path_components)
             msg = msg.splitlines()
             msg += ["", "Updated at {}".format(now)]
             msg = "\n".join(msg)
-
+            srm = "\n" + str(summary["TOTAL"]) + " jobs; " + str(summary["COMPLETED"]) + " completed, " + str(summary["REMOVED"]) + " removed, " + str(summary["IDLE"]) + " idle, " + str(summary["RUNNING"]) + " running, " + str(summary["HELD"]) + " held, " + str(summary["SUSPENDED"]) + " suspended"
+            msg += srm
+            
             print(msg)
 
             for grouper, checker, exit_code, disp in exit_checks:
@@ -453,9 +455,11 @@ def table_by(clusters, attribute, abbreviate_path_components):
         'batch_name': BATCH_NAME,
     }[attribute]
 
+    summary = {"TOTAL": 0, "COMPLETED": 0, "REMOVED": 0, "IDLE": 0, "RUNNING": 0, "HELD": 0, "SUSPENDED": 0}
+
     rows = []
     for attribute_value, clusters in group_clusters_by(clusters, attribute).items():
-        row_data = row_data_from_job_state(clusters)
+        summary, row_data = row_data_from_job_state(clusters, summary)
 
         row_data[key] = attribute_value
 
@@ -471,8 +475,13 @@ def table_by(clusters, attribute, abbreviate_path_components):
     rows.sort(key=lambda r: r[key])
 
     headers, rows = strip_empty_columns(rows)
+    
+    for r in rows:
+        for x in r:
+            if r.get(x) == 0:
+                r[x] = "-"
 
-    return table(headers=[key] + headers, rows=rows, alignment=TABLE_ALIGNMENT)
+    return summary, table(headers=[key] + headers, rows=rows, alignment=TABLE_ALIGNMENT)
 
 
 def group_clusters_by(clusters, attribute):
@@ -499,7 +508,7 @@ def strip_empty_columns(rows):
     return headers, rows
 
 
-def row_data_from_job_state(clusters):
+def row_data_from_job_state(clusters, summary):
     row_data = {js: 0 for js in JobStatus}
 
     active_job_ids = []
@@ -513,8 +522,16 @@ def row_data_from_job_state(clusters):
 
     row_data[TOTAL] = sum(row_data.values())
     row_data[ACTIVE_JOBS] = ", ".join(active_job_ids)
+    
+    summary["TOTAL"] += row_data[TOTAL]
+    summary["COMPLETED"] += row_data[JobStatus.COMPLETED]
+    summary["REMOVED"] += row_data[JobStatus.REMOVED]
+    summary["IDLE"] += row_data[JobStatus.IDLE]
+    summary["RUNNING"] += row_data[JobStatus.RUNNING]
+    summary["HELD"] += row_data[JobStatus.HELD]
+    summary["SUSPENDED"] += row_data[JobStatus.SUSPENDED]
 
-    return row_data
+    return summary, row_data
 
 
 def normalize_path(path, abbreviate_path_components=False):
