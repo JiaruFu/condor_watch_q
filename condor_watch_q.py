@@ -510,21 +510,10 @@ def row_data_from_job_state(clusters):
 
             if job_state in ACTIVE_STATES:
                 active_job_ids.append("{}.{}".format(cluster.cluster_id, proc_id))
-    
-    maxmin_job = []
-    max_n = 0
-    min_n = float("inf")
-    for id in range(len(active_job_ids)):
-        if(float(active_job_ids[id]) > max_n):
-            max_n = float(active_job_ids[id])
-        if(float(active_job_ids[id]) < min_n):
-            min_n = float(active_job_ids[id])
-    maxmin_job.append(str(min_n));
-    maxmin_job.append(str(max_n))
-    
+
     row_data[TOTAL] = sum(row_data.values())
-    row_data[ACTIVE_JOBS] = ", ".join(maxmin_job)
-    
+    row_data[ACTIVE_JOBS] = ", ".join(active_job_ids)
+
     return row_data
 
 
