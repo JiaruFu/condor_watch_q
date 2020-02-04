@@ -348,7 +348,7 @@ def query(constraint, projection=None):
 
 
 TOTAL = "TOTAL"
-ACTIVE_JOBS = "ACTIVE_JOBS"
+ACTIVE_JOBS = "JOB_IDS"
 EVENT_LOG = "LOG"
 CLUSTER_ID = "CLUSTER"
 BATCH_NAME = "BATCH"
@@ -501,7 +501,6 @@ def strip_empty_columns(rows):
 
 def row_data_from_job_state(clusters):
     row_data = {js: 0 for js in JobStatus}
-
     active_job_ids = []
 
     for cluster in clusters:
@@ -523,8 +522,8 @@ def row_data_from_job_state(clusters):
     maxmin_job.append(str(max_n))
 
     row_data[TOTAL] = sum(row_data.values())
-    row_data[ACTIVE_JOBS] = ", ".join(maxmin_job)
-
+    row_data[ACTIVE_JOBS] = " ... ".join(maxmin_job)
+    
     return row_data
 
 
