@@ -455,19 +455,16 @@ def table_by(clusters, attribute, abbreviate_path_components):
         'batch_name': BATCH_NAME,
     }[attribute]
 
-    summary = {TOTAL: 0, JobStatus.COMPLETED: 0, JobStatus.REMOVED: 0, JobStatus.IDLE: 0, JobStatus.RUNNING: 0, JobStatus.HELD: 0, JobStatus.SUSPENDED: 0}
-
+    summary = collections.defaultdict(int)
     rows = []
     for attribute_value, clusters in group_clusters_by(clusters, attribute).items():
         row_data = row_data_from_job_state(clusters)
         
         summary[TOTAL] += row_data[TOTAL]
-        summary[JobStatus.COMPLETED] += row_data[JobStatus.COMPLETED]
-        summary[JobStatus.REMOVED] += row_data[JobStatus.REMOVED]
-        summary[JobStatus.IDLE] += row_data[JobStatus.IDLE]
-        summary[JobStatus.RUNNING] += row_data[JobStatus.RUNNING]
-        summary[JobStatus.HELD] += row_data[JobStatus.HELD]
-        summary[JobStatus.SUSPENDED] += row_data[JobStatus.SUSPENDED]
+            
+        for status in JobStatus:
+                   if status != JobStatus.TRANSFERRING_OUTPUT:
+                      summary[status] += row_data[status]
 
         row_data[key] = attribute_value
 
