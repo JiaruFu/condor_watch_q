@@ -264,7 +264,7 @@ def watch_q(
             msg = msg.splitlines()
             msg += ["", "Updated at {}".format(now)]
             msg = "\n".join(msg)
-            srm = "\n" + str(summary["TOTAL"]) + " jobs; " + str(summary["COMPLETED"]) + " completed, " + str(summary["REMOVED"]) + " removed, " + str(summary["IDLE"]) + " idle, " + str(summary["RUNNING"]) + " running, " + str(summary["HELD"]) + " held, " + str(summary["SUSPENDED"]) + " suspended"
+            srm = "\n{} jobs; {} completed, {} removed, {} idle, {} running, {} held, {} suspended".format(str(summary[TOTAL]), str(summary[JobStatus.COMPLETED]), str(summary[JobStatus.REMOVED]), str(summary[JobStatus.IDLE]), str(summary[JobStatus.RUNNING]),str(summary[JobStatus.HELD]), str(summary[JobStatus.SUSPENDED]))
             msg += srm
             
             print(msg)
@@ -455,11 +455,19 @@ def table_by(clusters, attribute, abbreviate_path_components):
         'batch_name': BATCH_NAME,
     }[attribute]
 
-    summary = {"TOTAL": 0, "COMPLETED": 0, "REMOVED": 0, "IDLE": 0, "RUNNING": 0, "HELD": 0, "SUSPENDED": 0}
+    summary = {TOTAL: 0, JobStatus.COMPLETED: 0, JobStatus.REMOVED: 0, JobStatus.IDLE: 0, JobStatus.RUNNING: 0, JobStatus.HELD: 0, JobStatus.SUSPENDED: 0}
 
     rows = []
     for attribute_value, clusters in group_clusters_by(clusters, attribute).items():
-        summary, row_data = row_data_from_job_state(clusters, summary)
+        row_data = row_data_from_job_state(clusters)
+        
+        summary[TOTAL] += row_data[TOTAL]
+        summary[JobStatus.COMPLETED] += row_data[JobStatus.COMPLETED]
+        summary[JobStatus.REMOVED] += row_data[JobStatus.REMOVED]
+        summary[JobStatus.IDLE] += row_data[JobStatus.IDLE]
+        summary[JobStatus.RUNNING] += row_data[JobStatus.RUNNING]
+        summary[JobStatus.HELD] += row_data[JobStatus.HELD]
+        summary[JobStatus.SUSPENDED] += row_data[JobStatus.SUSPENDED]
 
         row_data[key] = attribute_value
 
@@ -508,7 +516,7 @@ def strip_empty_columns(rows):
     return headers, rows
 
 
-def row_data_from_job_state(clusters, summary):
+def row_data_from_job_state(clusters):
     row_data = {js: 0 for js in JobStatus}
     active_job_ids = []
 
@@ -522,15 +530,7 @@ def row_data_from_job_state(clusters, summary):
     row_data[TOTAL] = sum(row_data.values())
     row_data[ACTIVE_JOBS] = " ... ".join(active_job_ids)
     
-    summary["TOTAL"] += row_data[TOTAL]
-    summary["COMPLETED"] += row_data[JobStatus.COMPLETED]
-    summary["REMOVED"] += row_data[JobStatus.REMOVED]
-    summary["IDLE"] += row_data[JobStatus.IDLE]
-    summary["RUNNING"] += row_data[JobStatus.RUNNING]
-    summary["HELD"] += row_data[JobStatus.HELD]
-    summary["SUSPENDED"] += row_data[JobStatus.SUSPENDED]
-
-    return summary, row_data
+    return row_data
     
 
 def normalize_path(path, abbreviate_path_components=False):
