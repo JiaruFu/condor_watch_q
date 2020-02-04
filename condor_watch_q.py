@@ -350,7 +350,7 @@ def query(constraint, projection=None):
 
 
 TOTAL = "TOTAL"
-ACTIVE_JOBS = "ACTIVE_JOBS"
+ACTIVE_JOBS = "JOB_IDS"
 EVENT_LOG = "LOG"
 CLUSTER_ID = "CLUSTER"
 BATCH_NAME = "BATCH"
@@ -510,7 +510,6 @@ def strip_empty_columns(rows):
 
 def row_data_from_job_state(clusters, summary):
     row_data = {js: 0 for js in JobStatus}
-
     active_job_ids = []
 
     for cluster in clusters:
@@ -521,7 +520,7 @@ def row_data_from_job_state(clusters, summary):
                 active_job_ids.append("{}.{}".format(cluster.cluster_id, proc_id))
 
     row_data[TOTAL] = sum(row_data.values())
-    row_data[ACTIVE_JOBS] = ", ".join(active_job_ids)
+    row_data[ACTIVE_JOBS] = " ... ".join(active_job_ids)
     
     summary["TOTAL"] += row_data[TOTAL]
     summary["COMPLETED"] += row_data[JobStatus.COMPLETED]
@@ -532,7 +531,7 @@ def row_data_from_job_state(clusters, summary):
     summary["SUSPENDED"] += row_data[JobStatus.SUSPENDED]
 
     return summary, row_data
-
+    
 
 def normalize_path(path, abbreviate_path_components=False):
     possibilities = []
