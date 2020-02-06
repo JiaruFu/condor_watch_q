@@ -264,7 +264,7 @@ def watch_q(
             msg = msg.splitlines()
             msg += ["", "Updated at {}".format(now)]
             msg = "\n".join(msg)
-            srm = "\n{} jobs; {} completed, {} removed, {} idle, {} running, {} held, {} suspended".format(str(summary[TOTAL]), str(summary[JobStatus.COMPLETED]), str(summary[JobStatus.REMOVED]), str(summary[JobStatus.IDLE]), str(summary[JobStatus.RUNNING]),str(summary[JobStatus.HELD]), str(summary[JobStatus.SUSPENDED]))
+            srm = "\n{} jobs; {} completed, {} removed, {} idle, {} running, {} held, {} suspended".format(summary[TOTAL], summary[JobStatus.COMPLETED], summary[JobStatus.REMOVED], summary[JobStatus.IDLE], summary[JobStatus.RUNNING], summary[JobStatus.HELD], summary[JobStatus.SUSPENDED])
             msg += srm
             
             print(msg)
